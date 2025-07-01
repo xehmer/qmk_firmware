@@ -57,23 +57,49 @@ report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
   return mouse_report;
 }
 
+// int scroll_accumulator = 0;
+// bool encoder_update_user(uint8_t index, bool clockwise) {
+//     // reset scroll accumulation after a duration with no scroll event
+//     if (timer_elapsed(lastScroll) > SCROLL_ACCUMULATOR_RESET_MS) {
+//         scroll_accumulator = 0;
+//     }
 
-static int scroll_accumulator = 0;
-extern uint16_t lastScroll;
+//     scroll_accumulator += clockwise ? 1 : -1;
+//     if (abs(scroll_accumulator) >= SCROLL_THRESHOLD) {
+//         bool scroll_up = scroll_accumulator > 0;
+//         for (int i = 0; i < SCROLL_MULTIPLIER; i++) {
+//             tap_code(scroll_up ? KC_WH_U : KC_WH_D);
+//         }
+//         scroll_accumulator = 0;
+//     }
+//     return false;
+// }
+
+uint swallowed_up = 0;
+uint swallowed_down = 0;
+uint16_t lastScrollHandledByUs = 0; // can't use Ploopy default 'lastScroll' due to queue handling asynchronicity
 
 bool encoder_update_user(uint8_t index, bool clockwise) {
     // reset scroll accumulation after a duration with no scroll event
-    if (timer_elapsed(lastScroll) > SCROLL_ACCUMULATOR_RESET_MS) {
-        scroll_accumulator = 0;
+    if (timer_elapsed(lastScrollHandledByUs) > SCROLL_ACCUMULATOR_RESET_MS) {
+        swallowed_up = 0;
+        swallowed_down = 0;
     }
 
-    scroll_accumulator += clockwise ? 1 : -1;
-    if (abs(scroll_accumulator) >= SCROLL_THRESHOLD) {
-        bool scroll_up = scroll_accumulator > 0;
-        for (int i = 0; i < SCROLL_MULTIPLIER; i++) {
-            tap_code(scroll_up ? KC_WH_U : KC_WH_D);
+    if (clockwise) {
+        swallowed_up += 1;
+        swallowed_down = 0;
+        if (swallowed_up >= SCROLL_THRESHOLD) {
+            tap_code(KC_WH_U);
         }
-        scroll_accumulator = 0;
+    } else {
+        swallowed_down += 1;
+        swallowed_up = 0;
+        if (swallowed_down >= SCROLL_THRESHOLD) {
+            tap_code(KC_WH_D);
+        }
     }
+
+    lastScrollHandledByUs = timer_read();
     return false;
 }
