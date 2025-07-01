@@ -32,7 +32,7 @@ static bool encoder_handle_queue(void) {
     uint8_t index;
     bool    clockwise;
     while (encoder_dequeue_event(&index, &clockwise)) {
-#ifdef ENCODER_MAP_ENABLE
+#ifdef ENCODER_MAP_ENABLE_2
 
         // The delays below cater for Windows and its wonderful requirements.
         action_exec(clockwise ? MAKE_ENCODER_CW_EVENT(index, true) : MAKE_ENCODER_CCW_EVENT(index, true));

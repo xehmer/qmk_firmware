@@ -18,7 +18,7 @@
 
 #pragma once
 
-#define DYNAMIC_KEYMAP_LAYER_COUNT 8
+#define DYNAMIC_KEYMAP_LAYER_COUNT 4
 
 /* defaults to 600 DPI */
 #define PLOOPY_DPI_OPTIONS { 600, 900, 1200, 1600, 2400 }
