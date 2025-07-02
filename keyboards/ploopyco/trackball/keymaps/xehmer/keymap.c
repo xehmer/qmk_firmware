@@ -53,6 +53,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     if (is_drag_scroll && (keycode != DRAG_SCROLL || wasAdhocScroll(keycode, record))) {
         is_drag_scroll = false;
+        if (!layer_state_is(1)) {
+            return false;
+        }
     }
 
     return true;
