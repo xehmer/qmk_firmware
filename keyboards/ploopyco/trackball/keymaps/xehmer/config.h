@@ -25,8 +25,8 @@
 #define PLOOPY_DPI_DEFAULT 0
 
 #define PLOOPY_DRAGSCROLL_INVERT
-#define PLOOPY_DRAGSCROLL_DIVISOR_H 40.0
-#define PLOOPY_DRAGSCROLL_DIVISOR_V 40.0
+#define PLOOPY_DRAGSCROLL_DIVISOR_H 50.0
+#define PLOOPY_DRAGSCROLL_DIVISOR_V 30.0
 
 /* Number of points scrolled after which a click-scroll-release counts as
    "active while held". Scroll further than that in any direction & releasing
