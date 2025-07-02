@@ -20,32 +20,29 @@ extern bool is_drag_scroll;
 uint16_t    overall_scroll_distance = 0;
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-    [0] = LAYOUT(KC_BTN1, KC_BTN3, KC_BTN2, MO(1), DRAG_SCROLL),
-    [1] = LAYOUT(KC_BTN4, G(KC_W), KC_BTN5, _______, MO(2)),
-    [2] = LAYOUT(KC_BRIGHTNESS_DOWN, KC_MEDIA_PLAY_PAUSE, KC_BRIGHTNESS_UP, _______, _______),
-    [3] = LAYOUT(_______, _______, _______, _______, _______),
+    [0] = LAYOUT(KC_BTN1, KC_BTN3, KC_BTN2, DRAG_SCROLL, MO(2)), [1] = LAYOUT(KC_BTN4, G(KC_W), KC_BTN5, _______, MO(3)), [2] = LAYOUT(KC_BRIGHTNESS_DOWN, KC_MEDIA_PLAY_PAUSE, KC_BRIGHTNESS_UP, MO(4), _______), [3] = LAYOUT(_______, _______, _______, _______, _______), [4] = LAYOUT(_______, _______, _______, _______, _______),
 };
 
 #if defined(ENCODER_MAP_ENABLE)
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
-    [0] = {ENCODER_CCW_CW(MS_WHLD, MS_WHLU)},
-    [1] = {ENCODER_CCW_CW(LCS(KC_TAB), LCTL(KC_TAB))},
-    [2] = {ENCODER_CCW_CW(KC_VOLD, KC_VOLU)},
-    [3] = {ENCODER_CCW_CW(_______, _______)},
+    [0] = {ENCODER_CCW_CW(MS_WHLD, MS_WHLU)}, [1] = {ENCODER_CCW_CW(LCS(KC_TAB), LCTL(KC_TAB))}, [2] = {ENCODER_CCW_CW(KC_VOLD, KC_VOLU)}, [3] = {ENCODER_CCW_CW(_______, _______)}, [4] = {ENCODER_CCW_CW(_______, _______)},
 };
 #endif
 
+bool wasAdhocScroll(uint16_t keycode, keyrecord_t *record) {
+    /* If we scrolled further than that distance while holding the button pressed, it's an adhoc scroll & we clear the drag-scroll state. */
+    return keycode == DRAG_SCROLL && !record->event.pressed && overall_scroll_distance > BOINKOR_PLOOPY_RELEASE_ADHOC_DISTANCE;
+}
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    /* Specially handle l/r clicks on drag-scrolling (stop scrolling) */
-    if (is_drag_scroll && (keycode == KC_BTN1 || keycode == KC_BTN2)) {
-        is_drag_scroll = false;
-        return false;
+    if (keycode == DRAG_SCROLL) {
+        if (record->event.pressed)
+            layer_on(1);
+        else
+            layer_off(1);
     }
 
-    if (is_drag_scroll && keycode == DRAG_SCROLL && !record->event.pressed && overall_scroll_distance > BOINKOR_PLOOPY_RELEASE_ADHOC_DISTANCE) {
-        /* If we scrolled further than that distance while holding the button pressed, it's an adhoc scroll & we clear the drag-scroll state. */
+    if (is_drag_scroll && (keycode != DRAG_SCROLL || wasAdhocScroll(keycode, record))) {
         is_drag_scroll = false;
-        return false;
     }
 
     return true;
@@ -59,24 +56,6 @@ report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
     }
     return mouse_report;
 }
-
-// int scroll_accumulator = 0;
-// bool encoder_update_user(uint8_t index, bool clockwise) {
-//     // reset scroll accumulation after a duration with no scroll event
-//     if (timer_elapsed(lastScroll) > SCROLL_ACCUMULATOR_RESET_MS) {
-//         scroll_accumulator = 0;
-//     }
-
-//     scroll_accumulator += clockwise ? 1 : -1;
-//     if (abs(scroll_accumulator) >= SCROLL_THRESHOLD) {
-//         bool scroll_up = scroll_accumulator > 0;
-//         for (int i = 0; i < SCROLL_MULTIPLIER; i++) {
-//             tap_code(scroll_up ? KC_WH_U : KC_WH_D);
-//         }
-//         scroll_accumulator = 0;
-//     }
-//     return false;
-// }
 
 // copied from encoder.c:35+
 void sendEncoderEvent(uint8_t index, bool clockwise) {
